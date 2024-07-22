@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
-
+use App\Models\Flagged_Plates;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
@@ -15,12 +15,12 @@ class ProductController extends Controller
   function AddProduct(Request $request)
   {
     if(Auth::id()){
-
+    $user = Auth::user();
     $validatedData = Validator::make($request->all(), [
-      'name' => 'required|max:100',
+      // 'name' => 'required|max:100',
       'description' => 'required|max:200',
-      'price' => 'required|numeric',
-      'image' => 'required|image',
+      'price' => 'required',
+      // 'image' => 'required|image',
   ]);
 
     if ($validatedData->fails()) {
@@ -31,21 +31,22 @@ class ProductController extends Controller
       ]);
     } 
 
-      $product = new Product();
-      $product->name = $request->name;
-      $product->description = $request->description;
-      $product->price =$request->price;
+      // $product = new Product();
+      $product = new Flagged_Plates();
+      // $product->name = $request->name;
+      $product->flagged_by = $user->phone;
+      $product->license_plate =$request->price;
+      $product->description =$request->description;
+      // $image = $request->file('image');
+      // $imageName = time() . '.' . $image->getClientOriginalExtension();
+      // $image->move('products', $imageName);
 
-      $image = $request->file('image');
-      $imageName = time() . '.' . $image->getClientOriginalExtension();
-      $image->move('products', $imageName);
-
-      $product->image = $imageName;
+      // $product->image = $imageName;
       $product->save();
       // return  $product;
       return response()->json([
         'status' => 200,
-        'message' => 'Product Added Successfully!',
+        'message' => 'Added Successfully!',
         'result' => $product
       ]);
     }
@@ -120,7 +121,7 @@ class ProductController extends Controller
     $validatedData = Validator::make($req->all(), [
       'name' => 'required|max:100',
       'description' => 'required|max:200',
-      'price' => 'required|numeric',
+      'price' => 'required|max:10',
   ]);
 
     if ($validatedData->fails()) {

@@ -65,13 +65,15 @@ class UserController extends Controller
 }
   
     $user = User::where('email', $req->email)->first();
+    // $role = $user->role;
   
   if ($user && Hash::check($req->password, $user->password)) {
 
     $payload = [
       'id' => $user->id,
       'email' => $user->email,
-      'username' => $user->firstname // Assuming the user name is stored in the 'name' column
+      'username' => $user->firstname, // 
+      'role' => $user->role
   ];
 
     $token = $user->createToken('API Token')->plainTextToken;
@@ -85,6 +87,7 @@ class UserController extends Controller
       'token_type' => 'Bearer',
       'token' => $token,
       // 'userlogin' => $user
+      'role' => $user->role
     ]);
   }
 }
@@ -100,8 +103,7 @@ public function getUserData()
 
  public function Logout(){
   
-       auth::user()->tokens()->delete();
-
+        auth::user()->tokens()->delete();
         return response()->json([
             'status' => 200,
         ]);
