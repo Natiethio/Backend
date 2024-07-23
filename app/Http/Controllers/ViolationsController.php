@@ -113,21 +113,11 @@ function AddTraffic(Request $request)
 
   function Violationlist()
   {
-    $products = Violation::all();
+    $products = Violation::orderBy('id', 'desc')->get();
+    // $products = Violation::all();
     return $products;
   }
-  // function Delete($id){
-  //   $result = Product::where('id',$id)->delete();
 
-  //    if($result){
-  //     return response()->json(["success" => "Product Deleted Successfully!"], 401);
-  //    }
-
-  //    else{
-  //     return response()->json(["error" => "Error While Deleting the product!"], 401);
-  //    }
-
-  // }
   public function Delete($id){
     if(Auth::id()){
     $product = Violation::find($id);
@@ -421,31 +411,39 @@ public function Flagged() {
    public function test(Request $request)
    {
        // Validate incoming request
-       $request->validate([
-           'violation_type' => 'required|string',
-           'image_file' => 'required|image',
-           'description' => 'required|string',
-           'License_plate' => 'required|string',
-       ]);
+      //  $request->validate([
+      //      'violation_type' => 'required|string',
+      //      'image_file' => 'required|image',
+      //      'description' => 'required|string',
+      //      'License_plate' => 'required|string',
+      //  ]);
 
+      $type = $request->type;
+      
        $imageFile = $request->file('image_file');
        $originalName = $imageFile->getClientOriginalName();
        $imagename = $originalName; //time() give image a unique name
     //    $fileInfo = pathinfo($imagename);
 
-    $request['image_file']->move('test', $imagename); //we will store image on 'custemersell folder of the public directory
-    $violation = new Violation();
+    $request->image_file->move('violation', $imagename);
+     //we will store image on 'custemersell folder of the public directory
+    $location = location::where('location',$request->location)->first();
+    
+    if( $type === 'overspeeding' || $type === 'redlight'){
+      $violation = new Violation();
+      $violation->location_id = $location->id;
+      $violation->violation_type = $request->type;
+      $violation->description = "description";
+      $violation->License_plate =  $request->lp;
+      $violation->image = $imagename;
+      $violation->save();
+  
+         return response()->json([
+           'status' => 200,
+           'message' =>  'Success',
+         ]);
+     }
+    }
 
-    $violation->violation_type =  $request->violation_type;
-    $violation->description = $request->description;
-    $violation->License_plate = $request->License_plate;
-    $violation->image = $imagename;
-    $violation->save();
-
-       return response()->json([
-         'status' => 200,
-         'message' =>  'Success',
-       ]);
-   }
 }
 
